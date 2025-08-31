@@ -64,7 +64,8 @@
         justify-content: center;
       }
       .calc-button:active,
-      .tab-button.active {
+      .tab-button.active,
+      .calc-button.active-key {
         box-shadow: inset -5px -5px 9px rgba(255, 255, 255, 0.45),
           inset 5px 5px 9px rgba(94, 104, 121, 0.3);
       }
@@ -295,10 +296,11 @@
                 >Harga Awal (Rp)</label
               >
               <input
-                type="number"
+                type="text"
+                inputmode="numeric"
                 id="price"
                 class="utility-input"
-                placeholder="Contoh: 150000"
+                placeholder="Contoh: 150.000"
               />
             </div>
             <div>
@@ -512,60 +514,173 @@
             if (tab.id === "tab-temp") contents.temp.classList.remove("hidden");
           });
         });
+
+        // --- Logika Kalkulator Standar (dengan formatting) ---
         const display = document.getElementById("display");
         const standardCalculator = document.getElementById(
           "calculator-standard"
         );
+
+        function formatCalculatorDisplay() {
+          if (display.value === "" || display.value === "Error") return;
+
+          const parts = display.value.split(/([+\-*/])/);
+          let lastPart = parts[parts.length - 1];
+
+          if (lastPart) {
+            const decimalParts = lastPart.split(",");
+            const integerPart = decimalParts[0];
+            const rawInteger = integerPart.replace(/\./g, "");
+
+            if (rawInteger === "") {
+              parts[parts.length - 1] =
+                decimalParts.length > 1 ? "," + decimalParts[1] : "";
+              display.value = parts.join("");
+              return;
+            }
+
+            const formattedInteger = new Intl.NumberFormat("id-ID").format(
+              rawInteger
+            );
+
+            decimalParts[0] = formattedInteger;
+            parts[parts.length - 1] = decimalParts.join(",");
+
+            display.value = parts.join("");
+          }
+        }
+
+        function getCalculableString(str) {
+          return str.replace(/\./g, "").replace(/,/g, ".");
+        }
+
         standardCalculator.addEventListener("click", (e) => {
           if (!e.target.matches("button")) return;
+
           const key = e.target;
           const action = key.textContent;
           const displayedNum = display.value;
-          if (!isNaN(action) || action === "." || action === "00") {
-            if (action === "00" && displayedNum === "0") return;
-            display.value =
-              displayedNum === "0" && action !== "."
-                ? action
-                : displayedNum + action;
-          }
-          if (["+", "-", "*", "/"].includes(action)) {
-            if (
-              displayedNum.length > 0 &&
-              !["+", "-", "*", "/"].includes(displayedNum.slice(-1))
-            ) {
-              display.value += action;
-            }
-          }
-          if (action === "←") {
-            display.value = displayedNum.slice(0, -1);
-          }
-          if (action === "C") {
+
+          if (display.value === "Error") {
             display.value = "";
           }
 
-          if (action === "√") {
+          if (!isNaN(action) || action === "00") {
+            if (action === "00" && displayedNum === "0") return;
+            if (displayedNum === "0") {
+              display.value = action;
+            } else {
+              display.value += action;
+            }
+            formatCalculatorDisplay();
+          } else if (action === ".") {
+            const parts = displayedNum.split(/([+\-*/])/);
+            const lastPart = parts[parts.length - 1];
+            if (lastPart === "") {
+              display.value += "0,";
+            } else if (!lastPart.includes(",")) {
+              display.value += ",";
+            }
+          } else if (["+", "-", "*", "/"].includes(action)) {
+            if (displayedNum.length > 0 && !/[+\-*/]$/.test(displayedNum)) {
+              display.value += action;
+            }
+          } else if (action === "←") {
+            display.value = displayedNum.slice(0, -1);
+            if (displayedNum.slice(-1) !== ",") {
+              formatCalculatorDisplay();
+            }
+          } else if (action === "C") {
+            display.value = "";
+          } else if (action === "√") {
             try {
-              const value = new Function("return " + displayedNum)();
+              const calculableValue = getCalculableString(displayedNum);
+              const value = new Function("return " + calculableValue)();
               if (value < 0) {
                 display.value = "Error";
               } else {
                 const result = Math.sqrt(value);
-                display.value = parseFloat(result.toFixed(10));
+                display.value = new Intl.NumberFormat("id-ID", {
+                  maximumFractionDigits: 10,
+                }).format(result);
               }
             } catch (error) {
               display.value = "Error";
             }
-          }
-
-          if (action === "=") {
+          } else if (action === "=") {
+            if (displayedNum === "" || /[+\-*/]$/.test(displayedNum)) return;
             try {
-              let result = new Function("return " + displayedNum)();
-              display.value = parseFloat(result.toFixed(10));
+              const expression = getCalculableString(displayedNum);
+              let result = new Function("return " + expression)();
+              display.value = new Intl.NumberFormat("id-ID", {
+                maximumFractionDigits: 10,
+              }).format(result);
             } catch (error) {
               display.value = "Error";
             }
           }
         });
+
+        // --- Logika Keyboard Input untuk Kalkulator Standar ---
+        document.addEventListener("keydown", (e) => {
+          if (contents.standard.classList.contains("hidden")) {
+            return;
+          }
+
+          const key = e.key;
+          let targetButton;
+
+          const keyMap = {
+            0: "0",
+            1: "1",
+            2: "2",
+            3: "3",
+            4: "4",
+            5: "5",
+            6: "6",
+            7: "7",
+            8: "8",
+            9: "9",
+            "+": "+",
+            "-": "-",
+            "*": "*",
+            "/": "/",
+            ".": ".",
+            ",": ".",
+            Enter: "=",
+            "=": "=",
+            Backspace: "←",
+            Delete: "C",
+            Escape: "C",
+          };
+
+          const targetAction = keyMap[key];
+
+          if (targetAction) {
+            e.preventDefault();
+
+            const buttons = standardCalculator.querySelectorAll("button");
+            buttons.forEach((button) => {
+              if (button.textContent === targetAction) {
+                targetButton = button;
+              }
+            });
+
+            if (key === "Enter" || key === "=") {
+              targetButton = standardCalculator.querySelector(".equals");
+            }
+
+            if (targetButton) {
+              targetButton.click();
+              targetButton.classList.add("active-key");
+              setTimeout(() => {
+                targetButton.classList.remove("active-key");
+              }, 100);
+            }
+          }
+        });
+
+        // --- Logika Kalkulator BMI ---
         const calculateBmiBtn = document.getElementById("calculate-bmi");
         calculateBmiBtn.addEventListener("click", () => {
           const weight = parseFloat(document.getElementById("weight").value);
@@ -603,10 +718,25 @@
                     <p class="text-lg font-bold text-gray-700 mt-2">BMI Anda: ${bmiRounded}</p>
                     <p class="text-xl font-bold ${colorClass}">${category}</p>`;
         });
+
+        // --- Logika Kalkulator Diskon ---
+        const priceInput = document.getElementById("price");
+        priceInput.addEventListener("input", (e) => {
+          let value = e.target.value;
+          if (!value) return;
+          let numberValue = parseInt(value.replace(/\D/g, ""), 10);
+          if (isNaN(numberValue)) {
+            e.target.value = "";
+            return;
+          }
+          e.target.value = new Intl.NumberFormat("id-ID").format(numberValue);
+        });
+
         const calculateDiscountBtn =
           document.getElementById("calculate-discount");
         calculateDiscountBtn.addEventListener("click", () => {
-          const price = parseFloat(document.getElementById("price").value);
+          const priceStr = document.getElementById("price").value;
+          const price = parseFloat(priceStr.replace(/\./g, ""));
           const discount = parseFloat(
             document.getElementById("discount").value
           );
@@ -654,6 +784,8 @@
                       savedAmount
                     )}</p>`;
         });
+
+        // --- Logika Kalkulator Suhu ---
         const calculateTempBtn = document.getElementById("calculate-temp");
         calculateTempBtn.addEventListener("click", () => {
           const tempInput = parseFloat(
