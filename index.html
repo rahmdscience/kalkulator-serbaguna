@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kalkulator Serbaguna</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Menggunakan font Inter dari Google Fonts */
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #e0e5ec;
+        min-height: 100vh; /* Memastikan body mengisi tinggi layar */
+      }
+
+      /* Gaya Kalkulator */
+      .calculator-container {
+        width: 100%;
+        max-width: 400px;
+        border-radius: 20px;
+        background: #dde1e7;
+        box-shadow: -6px -6px 12px rgba(255, 255, 255, 0.5),
+          6px 6px 12px rgba(94, 104, 121, 0.3);
+        padding: 20px; /* Disesuaikan untuk mobile */
+      }
+      .display-input {
+        height: 80px;
+        width: 100%;
+        border-radius: 10px;
+        background: #dde1e7;
+        box-shadow: inset -5px -5px 9px rgba(255, 255, 255, 0.45),
+          inset 5px 5px 9px rgba(94, 104, 121, 0.3);
+        border: 0;
+        color: #333;
+        font-size: 2.5rem;
+        padding: 0 20px;
+        text-align: right;
+      }
+      .display-input:focus {
+        outline: none;
+      }
+      .calc-button {
+        cursor: pointer;
+        border: 0;
+        font-size: 1.5rem;
+        border-radius: 50%;
+        background: #dde1e7;
+        box-shadow: -5px -5px 9px rgba(255, 255, 255, 0.45),
+          5px 5px 9px rgba(94, 104, 121, 0.3);
+        color: rgb(116, 116, 116);
+        transition: all 0.1s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .calc-button:active,
+      .tab-button.active {
+        box-shadow: inset -5px -5px 9px rgba(255, 255, 255, 0.45),
+          inset 5px 5px 9px rgba(94, 104, 121, 0.3);
+      }
+      .calc-button.operator {
+        color: #ff6f61;
+      }
+      .calc-button.equals {
+        width: 100%;
+        border-radius: 15px;
+        background-color: #a3b1c6;
+        color: white;
+      }
+      .calc-button.clear {
+        color: #dc3545;
+      }
+      .tab-button {
+        flex: 1;
+        padding: 10px 5px;
+        border: none;
+        background: #dde1e7;
+        box-shadow: -5px -5px 9px rgba(255, 255, 255, 0.45),
+          5px 5px 9px rgba(94, 104, 121, 0.3);
+        color: rgb(116, 116, 116);
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-align: center;
+      }
+      .tab-button:first-child {
+        border-radius: 10px 0 0 10px;
+      }
+      .tab-button:last-child {
+        border-radius: 0 10px 10px 0;
+      }
+      .utility-input {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #dde1e7;
+        box-shadow: inset -4px -4px 7px rgba(255, 255, 255, 0.5),
+          inset 4px 4px 7px rgba(94, 104, 121, 0.3);
+        font-size: 1rem;
+        color: #333;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+      }
+      .utility-input:focus {
+        outline: none;
+      }
+      select.utility-input {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+      }
+      .utility-button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        background: #a3b1c6;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: -5px -5px 9px rgba(255, 255, 255, 0.45),
+          5px 5px 9px rgba(94, 104, 121, 0.3);
+        transition: all 0.1s ease-in-out;
+      }
+      .utility-button:active {
+        box-shadow: inset -5px -5px 9px rgba(255, 255, 255, 0.45),
+          inset 5px 5px 9px rgba(94, 104, 121, 0.3);
+      }
+      .visual-indicator {
+        font-size: 2.5rem;
+        line-height: 1;
+        transition: all 0.3s ease;
+      }
+
+      /* Gaya Kustom untuk Modal Pop-up */
+      .social-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem; /* 12px */
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        background: #dde1e7;
+        color: #555;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: -5px -5px 9px rgba(255, 255, 255, 0.45),
+          5px 5px 9px rgba(94, 104, 121, 0.3);
+        transition: all 0.2s ease-in-out;
+      }
+      .social-link:hover {
+        color: #333;
+      }
+      .social-link:active {
+        box-shadow: inset -5px -5px 9px rgba(255, 255, 255, 0.45),
+          inset 5px 5px 9px rgba(94, 104, 121, 0.3);
+        color: #000;
+      }
+      .social-link svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .modal-content {
+        box-shadow: -6px -6px 12px rgba(255, 255, 255, 0.5),
+          6px 6px 12px rgba(94, 104, 121, 0.3);
+        animation: modal-fade-in 0.3s ease-out;
+      }
+      @keyframes modal-fade-in {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex items-center justify-center p-4">
+    <div class="calculator-container">
+      <!-- Navigasi Tab -->
+      <div class="flex mb-6">
+        <button id="tab-standard" class="tab-button active">Kalkulator</button>
+        <button id="tab-bmi" class="tab-button">BMI</button>
+        <button id="tab-discount" class="tab-button">Diskon</button>
+        <button id="tab-temp" class="tab-button">Suhu</button>
+      </div>
+
+      <!-- Watermark -->
+      <div
+        id="watermark"
+        class="text-center mb-6 text-gray-500 cursor-pointer hover:text-gray-700 transition duration-300 text-sm"
+      >
+        Created by Rahmad Sains
+      </div>
+
+      <!-- Konten Kalkulator -->
+      <div id="calculator-content">
+        <!-- Kalkulator Standar -->
+        <div id="calculator-standard">
+          <input type="text" id="display" class="display-input" readonly />
+          <div class="grid grid-cols-4 gap-3 mt-4">
+            <button class="calc-button clear col-span-2 h-14">C</button>
+            <button class="calc-button h-14">&larr;</button>
+            <button class="calc-button operator h-14">/</button>
+            <button class="calc-button h-14">7</button>
+            <button class="calc-button h-14">8</button>
+            <button class="calc-button h-14">9</button>
+            <button class="calc-button operator h-14">*</button>
+            <button class="calc-button h-14">4</button>
+            <button class="calc-button h-14">5</button>
+            <button class="calc-button h-14">6</button>
+            <button class="calc-button operator h-14">-</button>
+            <button class="calc-button h-14">1</button>
+            <button class="calc-button h-14">2</button>
+            <button class="calc-button h-14">3</button>
+            <button class="calc-button operator h-14">+</button>
+
+            <button class="calc-button h-14">0</button>
+            <button class="calc-button h-14">00</button>
+            <button class="calc-button h-14">.</button>
+            <button class="calc-button operator h-14">√</button>
+
+            <button class="calc-button equals col-span-4 mt-2 h-14">=</button>
+          </div>
+        </div>
+
+        <!-- Kalkulator BMI -->
+        <div id="calculator-bmi" class="hidden">
+          <h2 class="text-xl font-bold text-center text-gray-600 mb-4">
+            Kalkulator BMI
+          </h2>
+          <div class="space-y-4">
+            <div>
+              <label for="weight" class="block mb-1 text-gray-600"
+                >Berat Badan (kg)</label
+              >
+              <input
+                type="number"
+                id="weight"
+                class="utility-input"
+                placeholder="Contoh: 70"
+              />
+            </div>
+            <div>
+              <label for="height" class="block mb-1 text-gray-600"
+                >Tinggi Badan (cm)</label
+              >
+              <input
+                type="number"
+                id="height"
+                class="utility-input"
+                placeholder="Contoh: 175"
+              />
+            </div>
+            <button id="calculate-bmi" class="utility-button">
+              Hitung BMI
+            </button>
+            <div
+              id="bmi-result"
+              class="text-center mt-4 p-4 rounded-lg bg-gray-200 min-h-[120px] flex flex-col justify-center items-center"
+            >
+              <p class="text-gray-500">Hasil akan muncul di sini</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kalkulator Diskon -->
+        <div id="calculator-discount" class="hidden">
+          <h2 class="text-xl font-bold text-center text-gray-600 mb-4">
+            Kalkulator Diskon
+          </h2>
+          <div class="space-y-4">
+            <div>
+              <label for="price" class="block mb-1 text-gray-600"
+                >Harga Awal (Rp)</label
+              >
+              <input
+                type="number"
+                id="price"
+                class="utility-input"
+                placeholder="Contoh: 150000"
+              />
+            </div>
+            <div>
+              <label for="discount" class="block mb-1 text-gray-600"
+                >Diskon (%)</label
+              >
+              <input
+                type="number"
+                id="discount"
+                class="utility-input"
+                placeholder="Contoh: 25"
+              />
+            </div>
+            <button id="calculate-discount" class="utility-button">
+              Hitung Diskon
+            </button>
+            <div
+              id="discount-result"
+              class="text-center mt-4 p-4 rounded-lg bg-gray-200 min-h-[120px] flex flex-col justify-center items-center"
+            >
+              <p class="text-gray-500">Hasil akan muncul di sini</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kalkulator Suhu -->
+        <div id="calculator-temp" class="hidden">
+          <h2 class="text-xl font-bold text-center text-gray-600 mb-4">
+            Kalkulator Suhu
+          </h2>
+          <div class="space-y-4">
+            <div>
+              <label for="temp-input" class="block mb-1 text-gray-600"
+                >Masukkan Nilai Suhu</label
+              >
+              <input
+                type="number"
+                id="temp-input"
+                class="utility-input"
+                placeholder="Contoh: 30"
+              />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label for="from-unit" class="block mb-1 text-gray-600"
+                  >Dari</label
+                >
+                <select id="from-unit" class="utility-input">
+                  <option value="celsius">Celsius (°C)</option>
+                  <option value="fahrenheit">Fahrenheit (°F)</option>
+                  <option value="kelvin">Kelvin (K)</option>
+                </select>
+              </div>
+              <div>
+                <label for="to-unit" class="block mb-1 text-gray-600">Ke</label>
+                <select id="to-unit" class="utility-input">
+                  <option value="celsius">Celsius (°C)</option>
+                  <option value="fahrenheit" selected>Fahrenheit (°F)</option>
+                  <option value="kelvin">Kelvin (K)</option>
+                </select>
+              </div>
+            </div>
+            <button id="calculate-temp" class="utility-button">Konversi</button>
+            <div
+              id="temp-result"
+              class="text-center mt-4 p-4 rounded-lg bg-gray-200 min-h-[120px] flex flex-col justify-center items-center"
+            >
+              <p class="text-gray-500">Hasil akan muncul di sini</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Pop-up -->
+    <div
+      id="social-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4 transition-opacity duration-300"
+    >
+      <div
+        class="modal-content relative bg-[#dde1e7] rounded-2xl p-8 w-full max-w-sm text-center"
+      >
+        <button
+          id="close-modal-btn"
+          class="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-3xl font-light"
+        >
+          &times;
+        </button>
+        <img
+          src="https://placehold.co/100x100/a3b1c6/FFFFFF?text=RS"
+          alt="Avatar"
+          class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-[#dde1e7] shadow-[-5px_-5px_9px_rgba(255,255,255,0.45),_5px_5px_9px_rgba(94,104,121,0.3)]"
+        />
+        <h3 class="text-2xl font-bold text-gray-700 mb-1">Rahmad Sains</h3>
+        <p class="text-gray-500 mb-6">
+          Terhubung dengan saya melalui platform berikut.
+        </p>
+        <div class="space-y-4">
+          <a
+            href="https://linktr.ee/rahmdsai"
+            target="_blank"
+            class="social-link"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"
+              ></path>
+              <path
+                d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l-1.72-1.72"
+              ></path>
+            </svg>
+            <span>Linktree</span>
+          </a>
+          <a
+            href="https://www.instagram.com/rahmdsai"
+            target="_blank"
+            class="social-link"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="2"
+                y="2"
+                width="20"
+                height="20"
+                rx="5"
+                ry="5"
+                stroke="currentColor"
+                stroke-width="2"
+              ></rect>
+              <path
+                d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"
+                stroke="currentColor"
+                stroke-width="2"
+              ></path>
+              <line
+                x1="17.5"
+                y1="6.5"
+                x2="17.51"
+                y2="6.5"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              ></line>
+            </svg>
+            <span>Instagram</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Logika Modal Pop-up
+        const watermark = document.getElementById("watermark");
+        const closeModalBtn = document.getElementById("close-modal-btn");
+        const socialModal = document.getElementById("social-modal");
+
+        watermark.addEventListener("click", () => {
+          socialModal.classList.remove("hidden");
+          socialModal.classList.add("flex");
+        });
+
+        const closeModal = () => {
+          socialModal.classList.add("hidden");
+          socialModal.classList.remove("flex");
+        };
+
+        closeModalBtn.addEventListener("click", closeModal);
+        socialModal.addEventListener("click", (e) => {
+          if (e.target === socialModal) {
+            closeModal();
+          }
+        });
+
+        // Logika Kalkulator
+        const tabs = document.querySelectorAll(".tab-button");
+        const contents = {
+          standard: document.getElementById("calculator-standard"),
+          bmi: document.getElementById("calculator-bmi"),
+          discount: document.getElementById("calculator-discount"),
+          temp: document.getElementById("calculator-temp"),
+        };
+        tabs.forEach((tab) => {
+          tab.addEventListener("click", () => {
+            tabs.forEach((t) => t.classList.remove("active"));
+            tab.classList.add("active");
+            Object.values(contents).forEach((content) =>
+              content.classList.add("hidden")
+            );
+            if (tab.id === "tab-standard")
+              contents.standard.classList.remove("hidden");
+            if (tab.id === "tab-bmi") contents.bmi.classList.remove("hidden");
+            if (tab.id === "tab-discount")
+              contents.discount.classList.remove("hidden");
+            if (tab.id === "tab-temp") contents.temp.classList.remove("hidden");
+          });
+        });
+        const display = document.getElementById("display");
+        const standardCalculator = document.getElementById(
+          "calculator-standard"
+        );
+        standardCalculator.addEventListener("click", (e) => {
+          if (!e.target.matches("button")) return;
+          const key = e.target;
+          const action = key.textContent;
+          const displayedNum = display.value;
+          if (!isNaN(action) || action === "." || action === "00") {
+            if (action === "00" && displayedNum === "0") return;
+            display.value =
+              displayedNum === "0" && action !== "."
+                ? action
+                : displayedNum + action;
+          }
+          if (["+", "-", "*", "/"].includes(action)) {
+            if (
+              displayedNum.length > 0 &&
+              !["+", "-", "*", "/"].includes(displayedNum.slice(-1))
+            ) {
+              display.value += action;
+            }
+          }
+          if (action === "←") {
+            display.value = displayedNum.slice(0, -1);
+          }
+          if (action === "C") {
+            display.value = "";
+          }
+
+          if (action === "√") {
+            try {
+              const value = new Function("return " + displayedNum)();
+              if (value < 0) {
+                display.value = "Error";
+              } else {
+                const result = Math.sqrt(value);
+                display.value = parseFloat(result.toFixed(10));
+              }
+            } catch (error) {
+              display.value = "Error";
+            }
+          }
+
+          if (action === "=") {
+            try {
+              let result = new Function("return " + displayedNum)();
+              display.value = parseFloat(result.toFixed(10));
+            } catch (error) {
+              display.value = "Error";
+            }
+          }
+        });
+        const calculateBmiBtn = document.getElementById("calculate-bmi");
+        calculateBmiBtn.addEventListener("click", () => {
+          const weight = parseFloat(document.getElementById("weight").value);
+          const height = parseFloat(document.getElementById("height").value);
+          const resultDiv = document.getElementById("bmi-result");
+          if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) {
+            resultDiv.innerHTML = `<p class="text-red-500 font-semibold">Masukkan berat dan tinggi yang valid.</p>`;
+            return;
+          }
+          const heightInMeters = height / 100;
+          const bmi = weight / (heightInMeters * heightInMeters);
+          const bmiRounded = bmi.toFixed(2);
+          let category = "",
+            colorClass = "",
+            emoji = "";
+          if (bmi < 18.5) {
+            category = "Kekurangan berat badan";
+            colorClass = "text-blue-600";
+            emoji = "😟";
+          } else if (bmi >= 18.5 && bmi <= 24.9) {
+            category = "Berat badan ideal";
+            colorClass = "text-green-600";
+            emoji = "😊";
+          } else if (bmi >= 25 && bmi <= 29.9) {
+            category = "Kelebihan berat badan";
+            colorClass = "text-yellow-600";
+            emoji = "😥";
+          } else {
+            category = "Obesitas";
+            colorClass = "text-red-600";
+            emoji = "😨";
+          }
+          resultDiv.innerHTML = `
+                    <div class="visual-indicator ${colorClass}">${emoji}</div>
+                    <p class="text-lg font-bold text-gray-700 mt-2">BMI Anda: ${bmiRounded}</p>
+                    <p class="text-xl font-bold ${colorClass}">${category}</p>`;
+        });
+        const calculateDiscountBtn =
+          document.getElementById("calculate-discount");
+        calculateDiscountBtn.addEventListener("click", () => {
+          const price = parseFloat(document.getElementById("price").value);
+          const discount = parseFloat(
+            document.getElementById("discount").value
+          );
+          const resultDiv = document.getElementById("discount-result");
+          if (
+            isNaN(price) ||
+            isNaN(discount) ||
+            price < 0 ||
+            discount < 0 ||
+            discount > 100
+          ) {
+            resultDiv.innerHTML = `<p class="text-red-500 font-semibold">Masukkan harga dan diskon yang valid.</p>`;
+            return;
+          }
+          const savedAmount = price * (discount / 100);
+          const finalPrice = price - savedAmount;
+          const formatter = new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+          });
+          let feedback = "",
+            emoji = "",
+            colorClass = "";
+          if (discount < 20) {
+            feedback = "Sedikit lebih hemat";
+            emoji = "👍";
+            colorClass = "text-blue-600";
+          } else if (discount >= 20 && discount < 50) {
+            feedback = "Potongan yang lumayan!";
+            emoji = "🎉";
+            colorClass = "text-yellow-600";
+          } else {
+            feedback = "Penawaran Terbaik!";
+            emoji = "🤩";
+            colorClass = "text-green-600";
+          }
+          resultDiv.innerHTML = `
+                    <div class="visual-indicator ${colorClass}">${emoji}</div>
+                    <p class="font-semibold text-gray-700 mt-2">${feedback}</p>
+                    <p class="text-2xl font-bold text-gray-800">${formatter.format(
+                      finalPrice
+                    )}</p>
+                    <p class="text-sm text-gray-500">Anda hemat ${formatter.format(
+                      savedAmount
+                    )}</p>`;
+        });
+        const calculateTempBtn = document.getElementById("calculate-temp");
+        calculateTempBtn.addEventListener("click", () => {
+          const tempInput = parseFloat(
+            document.getElementById("temp-input").value
+          );
+          const fromUnit = document.getElementById("from-unit").value;
+          const toUnit = document.getElementById("to-unit").value;
+          const resultDiv = document.getElementById("temp-result");
+          if (isNaN(tempInput)) {
+            resultDiv.innerHTML = `<p class="text-red-500 font-semibold">Masukkan nilai suhu yang valid.</p>`;
+            return;
+          }
+          let result;
+          let tempInCelsius = tempInput;
+          if (fromUnit === "fahrenheit")
+            tempInCelsius = ((tempInput - 32) * 5) / 9;
+          if (fromUnit === "kelvin") tempInCelsius = tempInput - 273.15;
+          if (fromUnit === toUnit) {
+            result = tempInput;
+          } else if (fromUnit === "celsius") {
+            if (toUnit === "fahrenheit") result = (tempInput * 9) / 5 + 32;
+            else if (toUnit === "kelvin") result = tempInput + 273.15;
+          } else if (fromUnit === "fahrenheit") {
+            if (toUnit === "celsius") result = ((tempInput - 32) * 5) / 9;
+            else if (toUnit === "kelvin")
+              result = ((tempInput - 32) * 5) / 9 + 273.15;
+          } else if (fromUnit === "kelvin") {
+            if (toUnit === "celsius") result = tempInput - 273.15;
+            else if (toUnit === "fahrenheit")
+              result = ((tempInput - 273.15) * 9) / 5 + 32;
+          }
+          let emoji = "",
+            colorClass = "",
+            feedback = "";
+          if (tempInCelsius < 15) {
+            emoji = "🥶";
+            colorClass = "text-blue-500";
+            feedback = "Dingin!";
+          } else if (tempInCelsius >= 15 && tempInCelsius < 28) {
+            emoji = "😊";
+            colorClass = "text-green-500";
+            feedback = "Sejuk / Normal";
+          } else {
+            emoji = "🥵";
+            colorClass = "text-red-500";
+            feedback = "Panas!";
+          }
+          const fromSymbol =
+            fromUnit === "celsius"
+              ? "°C"
+              : fromUnit === "fahrenheit"
+              ? "°F"
+              : "K";
+          const toSymbol =
+            toUnit === "celsius" ? "°C" : toUnit === "fahrenheit" ? "°F" : "K";
+          resultDiv.innerHTML = `
+                    <div class="visual-indicator ${colorClass}">${emoji}</div>
+                    <p class="font-semibold text-gray-700 mt-2">${feedback}</p>
+                    <p class="text-2xl font-bold text-gray-800">${result.toFixed(
+                      2
+                    )} ${toSymbol}</p>
+                    <p class="text-sm text-gray-500">Dari ${tempInput} ${fromSymbol}</p>`;
+        });
+      });
+    </script>
+  </body>
+</html>
